@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block head_extra %}
+<link rel="stylesheet" href="{{ url_for('asset_file', filename='styles/airdrops.css') }}">
+{% endblock %}
+{% block content %}
+{% set is_local_ledger = airdrop_bootstrap is defined and airdrop_bootstrap.mode == 'local' %}
+<script id="airdrop-bootstrap" type="application/json">{{ (airdrop_bootstrap if airdrop_bootstrap is defined else {'mode': 'demo'}) | tojson }}</script>
+<div class="ad-page" id="airdrop-app">
+    <header class="ad-header">
+        <div><h2>空投领取与卖出 <small class="ad-mode">{{ '本机账本' if is_local_ledger else '体验版' }}</small></h2></div>
+        <button class="ad-btn ad-primary" id="new-event">＋ 添加空投</button>
+    </header>
+    <div id="ledger-save-warning" class="ad-notice" role="alert" hidden><span id="ledger-save-error"></span><button class="ad-btn" id="retry-ledger-save">重试保存</button><button class="ad-btn" id="export-ledger-draft">导出未保存记录</button><button class="ad-btn" id="discard-ledger-draft">放弃草稿并重新读取</button></div>
+    <section id="airdrop-empty" class="ad-card ad-empty" hidden><h3>暂无空投</h3><button id="empty-new-event" class="ad-btn ad-primary">添加空投</button></section>
+    <div id="airdrop-content">
+    <section class="ad-event ad-card">
+        <div class="ad-event-main"><div class="ad-event-options" id="event-options" role="group" aria-label="选择空投"></div></div>
+        <div class="ad-market"><div class="ad-market-top"><span class="ad-muted">参考价 <strong id="market-price">—</strong> U / 枚</span><button class="ad-text-btn" type="button" id="refresh-quote">更新价格 ↻</button></div><div class="ad-muted" id="price-status" role="status">正在获取价格…</div><details class="ad-manual-price"><summary>手动参考价</summary><form id="price-form" class="ad-price-form"><div class="ad-price-input"><input id="reference-price" type="number" step="any" min="0" required aria-label="估值参考价"><button class="ad-btn" type="submit">使用</button></div></form></details></div>
+    </section>
+    <section class="ad-stats" aria-label="空投汇总">
+        <article class="ad-stat ad-stat-highlight"><span>已卖实收 <small>U</small></span><strong id="stat-cash">0.00</strong><p id="stat-sold">已卖 0 枚</p></article>
+        <article class="ad-stat"><span>卖出均价 <small>U / 份</small></span><strong id="stat-average-lot">—</strong><p id="stat-average">每枚 — U</p></article>
+        <article class="ad-stat"><span>剩余估值 <small>U</small></span><strong id="stat-remaining">0.00</strong><p id="stat-quantity">剩余 0 枚</p></article>
+        <article class="ad-stat"><span>合计价值 <small>U</small></span><strong id="stat-total">0.00</strong></article>
+    </section>
+    <div class="ad-workspace">
+        <section class="ad-card ad-accounts">
+            <div class="ad-section-head"><div><h3>账户领取</h3><p id="member-refresh-status" role="status" hidden></p></div><span class="ad-muted" id="claim-summary"></span></div>
+            <div class="ad-sort-toolbar"><span class="ad-sort-label">排序</span><div class="ad-sort-options" id="account-sort-options" role="group" aria-label="账户排序"><button type="button" class="ad-sort-option" data-sort-mode="price-desc" aria-pressed="false">卖价高 → 低</button><button type="button" class="ad-sort-option" data-sort-mode="price-asc" aria-pressed="false">卖价低 → 高</button></div></div>
+            <div class="ad-table-wrap"><table class="ad-table"><thead><tr><th>排序</th><th>已领</th><th>账户</th><th>卖价 / 现值（U）</th><th>整份卖价（U）</th></tr></thead><tbody id="account-rows"></tbody></table></div>
+            <div class="ad-table-footer"><span id="save-status" role="status">{{ '记录已保存在本机' if is_local_ledger else '体验记录会自动保存' }}</span></div>
+        </section>
+        <details class="ad-card ad-history"><summary class="ad-history-summary"><span>卖出记录</span><span class="ad-count" id="sale-count">0 笔</span></summary><div id="sale-list"></div></details>
+    </div>
+    </div>
+    <div id="event-context-menu" class="ad-context-menu" role="menu" aria-label="空投操作" hidden><button type="button" id="delete-event" role="menuitem">删除</button></div>
+    <div id="ad-toast" class="ad-toast" role="status" hidden></div>
+</div>
+<dialog class="ad-dialog" id="event-dialog" aria-labelledby="event-title">
+    <form id="event-form"><div class="ad-dialog-head"><h3 id="event-title">添加空投</h3><button type="button" class="ad-close" data-close="event-dialog" aria-label="关闭新建窗口">×</button></div>
+        <label>搜索历史空投<input id="history-search" type="search" placeholder="输入 CT、币种名称或日期" autocomplete="off"></label>
+        <div class="ad-catalog-status"><span id="history-status" class="ad-muted" role="status">正在读取 Alpha123…</span><button id="reload-history" class="ad-text-btn" type="button">重新读取</button></div>
+        <div id="history-results" class="ad-history-results"></div>
+        <p id="history-choice" class="ad-muted" hidden></p>
+        <label>币种名称<input id="event-token" placeholder="例如 CT" maxlength="20" required></label>
+        <div class="ad-form-grid"><label>空投日期<input id="event-date" type="date" required></label><label>每个账户领取数量<input id="event-amount" type="number" step="any" min="0.00000001" value="200" required></label></div>
+        <details class="ad-manual-price"><summary>手动参考价（可选）</summary><label>参考价格（U / 枚）<input id="event-price" type="number" step="any" min="0" placeholder="自动获取"></label></details>
+        <p class="ad-error" id="event-error" role="alert"></p><button type="submit" class="ad-btn ad-primary ad-wide">添加</button>
+    </form>
+</dialog>
+<dialog class="ad-dialog" id="confirm-dialog" aria-labelledby="confirm-title">
+    <div class="ad-dialog-head"><h3 id="confirm-title">确认操作</h3><button type="button" class="ad-close" data-close="confirm-dialog" aria-label="取消操作">×</button></div>
+    <p id="confirm-message"></p><button type="button" id="confirm-action" class="ad-btn ad-primary ad-wide">确认</button>
+</dialog>
+<script src="{{ url_for('asset_file', filename='airdrops.js') }}" defer></script>
+{% endblock %}
