@@ -12,6 +12,8 @@ from ..presenters import CycleProfitPresenter, ProfitCalendarPresenter, ScorePre
 from ..repositories import ConfigRepository, SupabaseClient
 from ..sqlite_to_excel_exporter import SQLiteToExcelExporter
 from .application_service import ApplicationService
+from .airdrop_ledger_service import AirdropLedgerService
+from ..repositories.sqlite_airdrop_repository import SQLiteAirdropRepository
 from .cashflow_service import CashFlowService
 from .cycle_service import CycleService
 from .daily_entry_service import DailyEntryService
@@ -81,6 +83,9 @@ class StoreBootstrapService:
         context.daily_entry_service = DailyEntryService(entry_writer)
         member_after_change = None if read_only else context.export_service.sync_member_visibility
         context.member_service = MemberService(context.get_members, context.local_db, after_change=member_after_change)
+        context.airdrop_ledger_service = None if read_only else AirdropLedgerService(
+            SQLiteAirdropRepository(context.local_db._connect),
+        )
         context.command_service = StoreCommandService(context)
         context.score_presenter = ScorePresenter(context)
         context.wear_presenter = WearPresenter(context)

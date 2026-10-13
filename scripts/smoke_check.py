@@ -2064,6 +2064,9 @@ class SmokeCheckRunner:
                     "category": "入金", "note": "充值",
                 })
 
+                # Match the test clock to its July fixtures, regardless of the run date.
+                store._context.cashflow_service._today = lambda: '2026-07-12'
+
                 # Every field must survive the round-trip to SQLite — a dropped
                 # field here is exactly the class of data loss this project has hit before.
                 rows = store._context.local_db.list_cash_flows()

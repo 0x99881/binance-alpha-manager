@@ -31,6 +31,7 @@
                 <a href="{{ url_for('score_overview') }}" draggable="true" data-nav-item="score_overview" class="{% if request.endpoint == 'score_overview' %}active{% endif %}"><span class="nav-drag-handle" aria-hidden="true">::</span>{{ ui.nav_score_overview }}</a>
                 <a href="{{ url_for('wear_entry') }}" draggable="true" data-nav-item="wear_entry" class="{% if request.endpoint == 'wear_entry' %}active{% endif %}"><span class="nav-drag-handle" aria-hidden="true">::</span>{{ ui.nav_wear }}</a>
                 {% else %}
+                <a href="{{ url_for('airdrop_preview') }}" draggable="true" data-nav-item="airdrop_preview" class="{% if request.endpoint == 'airdrop_preview' %}active{% endif %}"><span class="nav-drag-handle" aria-hidden="true">::</span>空投领取与卖出</a>
                 <a href="{{ url_for('score_entry') }}" draggable="true" data-nav-item="score_entry" class="{% if request.endpoint == 'score_entry' %}active{% endif %}"><span class="nav-drag-handle" aria-hidden="true">::</span>{{ ui.nav_scores }}</a>
                 <a href="{{ url_for('score_overview') }}" draggable="true" data-nav-item="score_overview" class="{% if request.endpoint == 'score_overview' %}active{% endif %}"><span class="nav-drag-handle" aria-hidden="true">::</span>{{ ui.nav_score_overview }}</a>
                 <a href="{{ url_for('wear_entry') }}" draggable="true" data-nav-item="wear_entry" class="{% if request.endpoint == 'wear_entry' %}active{% endif %}"><span class="nav-drag-handle" aria-hidden="true">::</span>{{ ui.nav_wear }}</a>

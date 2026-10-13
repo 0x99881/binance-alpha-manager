@@ -10,6 +10,7 @@ from flask import abort, flash, redirect, render_template, request, Response, se
 from .constants import DISABLED, ENABLED
 from .ui_text import JS_UI_TEXT, MESSAGES, UI_TEXT, display_workbook_filename
 from .web_cashflow_routes import register_cashflow_routes
+from .web_airdrop_routes import register_airdrop_routes
 from .web_cycle_routes import register_cycle_routes
 from .web_member_routes import register_member_routes
 from .web_score_routes import register_score_routes
@@ -97,6 +98,14 @@ def register_routes(app, store) -> None:
             cycles=cycles,
             selected_cycle_id=selected_cycle_id,
         )
+
+    @app.get('/airdrops')
+    def airdrop_preview():
+        if read_only_mode:
+            return redirect(url_for('score_overview'))
+        ledger = getattr(store, 'airdrop_ledger_service', None)
+        return render_template('airdrops.html', title='空投领取与卖出',
+                               airdrop_bootstrap=ledger.view() if ledger else {'mode': 'demo'})
 
     def _render_value_chart(sheet_type, page_title, page_hint, total_label, marked_hint, marker_class):
         cycle_id_arg = (request.args.get('cycle') or '').strip()
@@ -227,4 +236,5 @@ def register_routes(app, store) -> None:
     )
     register_cycle_routes(app, store, read_only_mode=read_only_mode)
     register_cashflow_routes(app, store, read_only_mode=read_only_mode)
+    register_airdrop_routes(app, getattr(store, 'airdrop_ledger_service', None))
     register_sync_routes(app, store, read_only_mode=read_only_mode)

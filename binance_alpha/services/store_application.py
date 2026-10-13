@@ -27,6 +27,10 @@ class StoreApplication:
     def member_service(self):
         return self._context.member_service
 
+    @property
+    def airdrop_ledger_service(self):
+        return self._context.airdrop_ledger_service
+
     # ---- queries ----------------------------------------------------------
     def get_quick_scores(self): return self._context.query_service.get_quick_scores()
     def get_members(self): return self._context.query_service.get_members()
